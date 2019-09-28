@@ -7,15 +7,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
-import android.support.v13.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
+import androidx.legacy.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
+
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -61,15 +60,10 @@ public class DownloadDetailsActivity extends XposedBaseActivity implements Loade
         if (mModule != null) {
             setContentView(R.layout.activity_download_details);
 
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            Toolbar toolbar = findViewById(R.id.toolbar);
             setSupportActionBar(toolbar);
 
-            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    finish();
-                }
-            });
+            toolbar.setNavigationOnClickListener(view -> finish());
 
             ActionBar ab = getSupportActionBar();
 
@@ -82,34 +76,30 @@ public class DownloadDetailsActivity extends XposedBaseActivity implements Loade
 
             setupTabs();
 
-            Boolean directDownload = getIntent().getBooleanExtra("direct_download", false);
+            boolean directDownload = getIntent().getBooleanExtra("direct_download", false);
             // Updates available => start on the versions page
             if (mInstalledModule != null && mInstalledModule.isUpdate(sRepoLoader.getLatestVersion(mModule)) || directDownload)
                 mPager.setCurrentItem(DOWNLOAD_VERSIONS);
 
-            if (Build.VERSION.SDK_INT >= 21)
-                findViewById(R.id.fake_elevation).setVisibility(View.GONE);
+            findViewById(R.id.fake_elevation).setVisibility(View.GONE);
 
         } else {
             setContentView(R.layout.activity_download_details_not_found);
 
-            TextView txtMessage = (TextView) findViewById(android.R.id.message);
+            TextView txtMessage = findViewById(android.R.id.message);
             txtMessage.setText(getResources().getString(R.string.download_details_not_found, mPackageName));
 
-            findViewById(R.id.reload).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    v.setEnabled(false);
-                    sRepoLoader.triggerReload(true);
-                }
+            findViewById(R.id.reload).setOnClickListener(v -> {
+                v.setEnabled(false);
+                sRepoLoader.triggerReload(true);
             });
         }
     }
 
     private void setupTabs() {
-        mPager = (ViewPager) findViewById(R.id.download_pager);
+        mPager = findViewById(R.id.download_pager);
         mPager.setAdapter(new SwipeFragmentPagerAdapter(getFragmentManager()));
-        TabLayout mTabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
+        TabLayout mTabLayout = findViewById(R.id.sliding_tabs);
         mTabLayout.setupWithViewPager(mPager);
     }
 
@@ -119,7 +109,7 @@ public class DownloadDetailsActivity extends XposedBaseActivity implements Loade
             return null;
 
         String scheme = uri.getScheme();
-        if (TextUtils.isEmpty(scheme)) {
+        if (scheme == null || scheme.length() == 0) {
             return null;
         } else if (scheme.equals("package")) {
             return uri.getSchemeSpecificPart();
@@ -151,12 +141,7 @@ public class DownloadDetailsActivity extends XposedBaseActivity implements Loade
     }
 
     private void reload() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                recreate();
-            }
-        });
+        runOnUiThread(this::recreate);
     }
 
     @Override
@@ -268,9 +253,9 @@ public class DownloadDetailsActivity extends XposedBaseActivity implements Loade
 
     class SwipeFragmentPagerAdapter extends FragmentPagerAdapter {
         final int PAGE_COUNT = 3;
-        private String tabTitles[] = new String[]{getString(R.string.download_details_page_description), getString(R.string.download_details_page_versions), getString(R.string.download_details_page_settings),};
+        private String[] tabTitles = new String[]{getString(R.string.download_details_page_description), getString(R.string.download_details_page_versions), getString(R.string.download_details_page_settings),};
 
-        public SwipeFragmentPagerAdapter(FragmentManager fm) {
+        SwipeFragmentPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 

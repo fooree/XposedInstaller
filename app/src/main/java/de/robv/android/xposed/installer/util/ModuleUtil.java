@@ -9,9 +9,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-import android.os.FileUtils;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -27,6 +28,7 @@ import de.robv.android.xposed.installer.XposedApp;
 import de.robv.android.xposed.installer.repo.ModuleVersion;
 import de.robv.android.xposed.installer.repo.RepoDb;
 
+@SuppressWarnings("OctalInteger")
 public final class ModuleUtil {
     // xposedminversion below this
     private static final String MODULES_LIST_FILE = XposedApp.BASE_DIR + "conf/modules.list";
@@ -36,7 +38,7 @@ public final class ModuleUtil {
     private final XposedApp mApp;
     private final PackageManager mPm;
     private final String mFrameworkPackageName;
-    private final List<ModuleListener> mListeners = new CopyOnWriteArrayList<ModuleListener>();
+    private final List<ModuleListener> mListeners = new CopyOnWriteArrayList<>();
     private SharedPreferences mPref;
     private InstalledModule mFramework = null;
     private Map<String, InstalledModule> mInstalledModules;
@@ -58,7 +60,7 @@ public final class ModuleUtil {
         return mInstance;
     }
 
-    public static int extractIntPart(String str) {
+    static int extractIntPart(String str) {
         int result = 0, length = str.length();
         for (int offset = 0; offset < length; offset++) {
             char c = str.charAt(offset);
@@ -70,14 +72,14 @@ public final class ModuleUtil {
         return result;
     }
 
-    public void reloadInstalledModules() {
+    private void reloadInstalledModules() {
         synchronized (this) {
             if (mIsReloading)
                 return;
             mIsReloading = true;
         }
 
-        Map<String, InstalledModule> modules = new HashMap<String, InstalledModule>();
+        Map<String, InstalledModule> modules = new HashMap<>();
         RepoDb.beginTransation();
         try {
             RepoDb.deleteAllInstalledModules();
@@ -159,7 +161,7 @@ public final class ModuleUtil {
         return mFrameworkPackageName;
     }
 
-    public boolean isFramework(String packageName) {
+    private boolean isFramework(String packageName) {
         return mFrameworkPackageName.equals(packageName);
     }
 
@@ -183,7 +185,7 @@ public final class ModuleUtil {
     }
 
     public List<InstalledModule> getEnabledModules() {
-        LinkedList<InstalledModule> result = new LinkedList<InstalledModule>();
+        LinkedList<InstalledModule> result = new LinkedList<>();
 
         for (String packageName : mPref.getAll().keySet()) {
             InstalledModule module = getModule(packageName);
@@ -223,23 +225,23 @@ public final class ModuleUtil {
             modulesList.close();
             enabledModulesList.close();
 
-            FileUtils.setPermissions(MODULES_LIST_FILE, 00664, -1, -1);
-            FileUtils.setPermissions(XposedApp.ENABLED_MODULES_LIST_FILE, 00664, -1, -1);
+            FileUtil.setPermissions(MODULES_LIST_FILE, 00664, -1, -1);
+            FileUtil.setPermissions(XposedApp.ENABLED_MODULES_LIST_FILE, 00664, -1, -1);
 
             if (showToast)
-                showToast(R.string.xposed_module_list_updated);
+                showToast();
         } catch (IOException e) {
             Log.e(XposedApp.TAG, "cannot write " + MODULES_LIST_FILE, e);
             Toast.makeText(mApp, "cannot write " + MODULES_LIST_FILE + e, Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void showToast(int message) {
+    private void showToast() {
         if (mToast != null) {
             mToast.cancel();
             mToast = null;
         }
-        mToast = Toast.makeText(mApp, mApp.getString(message), Toast.LENGTH_SHORT);
+        mToast = Toast.makeText(mApp, mApp.getString(R.string.xposed_module_list_updated), Toast.LENGTH_SHORT);
         mToast.show();
     }
 
@@ -266,9 +268,8 @@ public final class ModuleUtil {
     }
 
     public class InstalledModule {
-        private static final int FLAG_FORWARD_LOCK = 1 << 29;
         public final String packageName;
-        public final boolean isFramework;
+        final boolean isFramework;
         public final String versionName;
         public final int versionCode;
         public final int minVersion;
@@ -302,13 +303,6 @@ public final class ModuleUtil {
 
         public boolean isInstalledOnExternalStorage() {
             return (app.flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE) != 0;
-        }
-
-        /**
-         * @hide
-         */
-        public boolean isForwardLocked() {
-            return (app.flags & FLAG_FORWARD_LOCK) != 0;
         }
 
         public String getAppName() {
@@ -360,6 +354,7 @@ public final class ModuleUtil {
         }
 
         @Override
+        @NonNull
         public String toString() {
             return getAppName();
         }

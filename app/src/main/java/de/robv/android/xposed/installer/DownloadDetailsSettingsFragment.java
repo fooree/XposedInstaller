@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
@@ -44,7 +42,7 @@ public class DownloadDetailsSettingsFragment extends PreferenceFragment {
 
         if (prefs.getBoolean("no_global", true)) {
             for (Map.Entry<String, ?> k : prefs.getAll().entrySet()) {
-                if (prefs.getString(k.getKey(), "").equals("global")) {
+                if ("global".equals(prefs.getString(k.getKey(), ""))) {
                     editor.putString(k.getKey(), "").apply();
                 }
             }
@@ -52,14 +50,9 @@ public class DownloadDetailsSettingsFragment extends PreferenceFragment {
             editor.putBoolean("no_global", false).apply();
         }
 
-        findPreference("release_type").setOnPreferenceChangeListener(
-                new OnPreferenceChangeListener() {
-                    @Override
-                    public boolean onPreferenceChange(Preference preference,
-                                                      Object newValue) {
-                        RepoLoader.getInstance().setReleaseTypeLocal(packageName, (String) newValue);
-                        return true;
-                    }
-                });
+        findPreference("release_type").setOnPreferenceChangeListener((preference, newValue) -> {
+            RepoLoader.getInstance().setReleaseTypeLocal(packageName, (String) newValue);
+            return true;
+        });
     }
 }

@@ -13,10 +13,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v13.app.FragmentCompat;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.ActionBar;
+import androidx.annotation.NonNull;
+import androidx.legacy.app.FragmentCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.ActionBar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -90,12 +90,7 @@ public class ModulesFragment extends ListFragment implements ModuleListener {
             mAdapter.clear();
             mAdapter.addAll(mModuleUtil.getModules().values());
             final Collator col = Collator.getInstance(Locale.getDefault());
-            mAdapter.sort(new Comparator<InstalledModule>() {
-                @Override
-                public int compare(InstalledModule lhs, InstalledModule rhs) {
-                    return col.compare(lhs.getAppName(), rhs.getAppName());
-                }
-            });
+            mAdapter.sort((lhs, rhs) -> col.compare(lhs.getAppName(), rhs.getAppName()));
             mAdapter.notifyDataSetChanged();
         }
     };
@@ -166,12 +161,7 @@ public class ModulesFragment extends ListFragment implements ModuleListener {
         if (requestCode == WRITE_EXTERNAL_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (mClickedMenuItem != null) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            onOptionsItemSelected(mClickedMenuItem);
-                        }
-                    }, 500);
+                    new Handler().postDelayed(() -> onOptionsItemSelected(mClickedMenuItem), 500);
                 }
             } else {
                 Toast.makeText(getActivity(), R.string.permissionNotGranted, Toast.LENGTH_LONG).show();
@@ -212,6 +202,7 @@ public class ModulesFragment extends ListFragment implements ModuleListener {
 
                 try {
                     if (!targetDir.exists())
+                        //noinspection ResultOfMethodCallIgnored
                         targetDir.mkdir();
 
                     FileInputStream in = new FileInputStream(listModules);
@@ -486,7 +477,7 @@ public class ModulesFragment extends ListFragment implements ModuleListener {
     }
 
     private class ModuleAdapter extends ArrayAdapter<InstalledModule> {
-        public ModuleAdapter(Context context) {
+        ModuleAdapter(Context context) {
             super(context, R.layout.list_item_module, R.id.title);
         }
 
@@ -497,22 +488,19 @@ public class ModulesFragment extends ListFragment implements ModuleListener {
             if (convertView == null) {
                 // The reusable view was created for the first time, set up the
                 // listener on the checkbox
-                ((CheckBox) view.findViewById(R.id.checkbox)).setOnCheckedChangeListener(new OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        String packageName = (String) buttonView.getTag();
-                        boolean changed = mModuleUtil.isModuleEnabled(packageName) ^ isChecked;
-                        if (changed) {
-                            mModuleUtil.setModuleEnabled(packageName, isChecked);
-                            mModuleUtil.updateModulesList(true);
-                        }
+                ((CheckBox) view.findViewById(R.id.checkbox)).setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    String packageName = (String) buttonView.getTag();
+                    boolean changed = mModuleUtil.isModuleEnabled(packageName) ^ isChecked;
+                    if (changed) {
+                        mModuleUtil.setModuleEnabled(packageName, isChecked);
+                        mModuleUtil.updateModulesList(true);
                     }
                 });
             }
 
             InstalledModule item = getItem(position);
 
-            TextView version = (TextView) view.findViewById(R.id.version_name);
+            TextView version = view.findViewById(R.id.version_name);
             version.setText(item.versionName);
 
             // Store the package name in some views' tag for later access
@@ -521,7 +509,7 @@ public class ModulesFragment extends ListFragment implements ModuleListener {
 
             ((ImageView) view.findViewById(R.id.icon)).setImageDrawable(item.getIcon());
 
-            TextView descriptionText = (TextView) view.findViewById(R.id.description);
+            TextView descriptionText = view.findViewById(R.id.description);
             if (!item.getDescription().isEmpty()) {
                 descriptionText.setText(item.getDescription());
                 descriptionText.setTextColor(ThemeUtil.getThemeColor(getContext(), android.R.attr.textColorSecondary));
@@ -530,9 +518,9 @@ public class ModulesFragment extends ListFragment implements ModuleListener {
                 descriptionText.setTextColor(getResources().getColor(R.color.warning));
             }
 
-            CheckBox checkbox = (CheckBox) view.findViewById(R.id.checkbox);
+            CheckBox checkbox = view.findViewById(R.id.checkbox);
             checkbox.setChecked(mModuleUtil.isModuleEnabled(item.packageName));
-            TextView warningText = (TextView) view.findViewById(R.id.warning);
+            TextView warningText = view.findViewById(R.id.warning);
 
             if (item.minVersion == 0) {
                 checkbox.setEnabled(false);

@@ -14,7 +14,7 @@ import de.robv.android.xposed.installer.util.RootUtil;
 import static de.robv.android.xposed.installer.util.InstallZipUtil.closeSilently;
 
 public class FlashRecoveryAuto extends Flashable {
-    public FlashRecoveryAuto(File zipPath, FrameworkZips.Type type, String title) {
+    FlashRecoveryAuto(File zipPath, FrameworkZips.Type type, String title) {
         super(zipPath, type, title);
     }
 
@@ -88,7 +88,7 @@ public class FlashRecoveryAuto extends Flashable {
         }
     };
 
-    protected FlashRecoveryAuto(Parcel in) {
+    private FlashRecoveryAuto(Parcel in) {
         super(in);
     }
 }

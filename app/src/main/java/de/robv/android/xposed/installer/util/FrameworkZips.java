@@ -2,8 +2,8 @@ package de.robv.android.xposed.installer.util;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.StringRes;
-import android.support.annotation.WorkerThread;
+import androidx.annotation.StringRes;
+import androidx.annotation.WorkerThread;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -39,7 +39,7 @@ import de.robv.android.xposed.installer.util.InstallZipUtil.ZipCheckResult;
 
 public final class FrameworkZips {
     public static final String ARCH = getArch();
-    public static final String SDK = Integer.toString(Build.VERSION.SDK_INT);
+    private static final String SDK = Integer.toString(Build.VERSION.SDK_INT);
 
     private static final File ONLINE_FILE = new File(XposedApp.getInstance().getCacheDir(), "framework.json");
     private static final String ONLINE_URL = "http://dl-xda.xposed.info/framework.json";
@@ -70,7 +70,7 @@ public final class FrameworkZips {
     private static Map<String, List<LocalFrameworkZip>>[] sLocal = emptyMapArray();
 
     @SuppressWarnings("unchecked")
-    public static <K,V> Map<K,V>[] emptyMapArray() {
+    private static <K,V> Map<K,V>[] emptyMapArray() {
         return (Map<K,V>[]) EMPTY_MAP_ARRAY;
     }
 
@@ -85,7 +85,7 @@ public final class FrameworkZips {
 
     public static class OnlineFrameworkZip extends FrameworkZip {
         public String url;
-        public boolean current = true;
+        boolean current = true;
 
         public boolean isOutdated() {
             return !current;
@@ -138,9 +138,7 @@ public final class FrameworkZips {
     }
 
     private static String fileToString(File file) throws IOException {
-        Reader reader = null;
-        try {
-            reader = new FileReader(file);
+        try (Reader reader = new FileReader(file)) {
             StringBuilder sb = new StringBuilder((int) file.length());
             char[] buffer = new char[8192];
             int read;
@@ -148,12 +146,6 @@ public final class FrameworkZips {
                 sb.append(buffer, 0, read);
             }
             return sb.toString();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ignored) {}
-            }
         }
     }
 
@@ -331,7 +323,7 @@ public final class FrameworkZips {
         return sLocal[type.ordinal()].containsKey(title);
     }
 
-    public static List<LocalFrameworkZip> getAllLocal(String title, Type type) {
+    private static List<LocalFrameworkZip> getAllLocal(String title, Type type) {
         List<LocalFrameworkZip> all = sLocal[type.ordinal()].get(title);
         return all != null ? all : Collections.<LocalFrameworkZip>emptyList();
     }
@@ -455,6 +447,7 @@ public final class FrameworkZips {
         protected void onClear() {
             super.onClear();
             synchronized (this) {
+                //noinspection ResultOfMethodCallIgnored
                 ONLINE_FILE.delete();
             }
             synchronized (FrameworkZips.class) {

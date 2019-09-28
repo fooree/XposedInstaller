@@ -110,11 +110,11 @@ public final class InstallZipUtil {
             return mVersionInt;
         }
 
-        public boolean isArchCompatible() {
+        boolean isArchCompatible() {
             return FrameworkZips.ARCH.equals(mArch);
         }
 
-        public boolean isSdkCompatible() {
+        boolean isSdkCompatible() {
             return mMinSdk <= Build.VERSION.SDK_INT && Build.VERSION.SDK_INT <= mMaxSdk;
         }
 
@@ -124,7 +124,7 @@ public final class InstallZipUtil {
             return missing;
         }
 
-        public boolean isCompatible() {
+        boolean isCompatible() {
             return isSdkCompatible() && isArchCompatible();
         }
     }
@@ -163,7 +163,7 @@ public final class InstallZipUtil {
         return prop.isComplete() ? prop : null;
     }
 
-    public static String messageForError(int code, Object... args) {
+    private static String messageForError(int code, Object... args) {
         Context context = XposedApp.getInstance();
         switch (code) {
             case FlashCallback.ERROR_TIMEOUT:

@@ -3,8 +3,8 @@ package de.robv.android.xposed.installer;
 import android.app.Fragment;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,15 +30,10 @@ public class AboutActivity extends XposedBaseActivity {
         ThemeUtil.setTheme(this);
         setContentView(R.layout.activity_container);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(view -> finish());
 
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
@@ -78,32 +73,19 @@ public class AboutActivity extends XposedBaseActivity {
             } catch (NameNotFoundException ignored) {
             }
 
-            licensesView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    createLicenseDialog();
-                }
+            licensesView.setOnClickListener(v1 -> createLicenseDialog());
+
+            developersView.setOnClickListener(v12 -> {
+                MaterialDialog dialog = new MaterialDialog.Builder(getActivity())
+                        .title(R.string.about_developers_label)
+                        .content(R.string.about_developers)
+                        .positiveText(android.R.string.ok)
+                        .show();
+
+                ((TextView) dialog.findViewById(R.id.md_content)).setMovementMethod(LinkMovementMethod.getInstance());
             });
 
-            developersView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    MaterialDialog dialog = new MaterialDialog.Builder(getActivity())
-                            .title(R.string.about_developers_label)
-                            .content(R.string.about_developers)
-                            .positiveText(android.R.string.ok)
-                            .show();
-
-                    ((TextView) dialog.findViewById(R.id.md_content)).setMovementMethod(LinkMovementMethod.getInstance());
-                }
-            });
-
-            sourceCodeView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    NavUtil.startURL(getActivity(), getString(R.string.about_source));
-                }
-            });
+            sourceCodeView.setOnClickListener(v13 -> NavUtil.startURL(getActivity(), getString(R.string.about_source)));
 
             if (translator.isEmpty()) {
                 translatorsView.setVisibility(View.GONE);

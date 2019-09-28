@@ -2,7 +2,6 @@ package de.robv.android.xposed.installer.util;
 
 import android.content.res.AssetManager;
 import android.os.Build;
-import android.os.FileUtils;
 import android.util.Log;
 
 import java.io.File;
@@ -13,10 +12,10 @@ import java.io.InputStream;
 import de.robv.android.xposed.installer.XposedApp;
 
 public class AssetUtil {
-    public static final File BUSYBOX_FILE = new File(XposedApp.getInstance().getCacheDir(), "busybox-xposed");
+    static final File BUSYBOX_FILE = new File(XposedApp.getInstance().getCacheDir(), "busybox-xposed");
 
     @SuppressWarnings("deprecation")
-    public static String getBinariesFolder() {
+    private static String getBinariesFolder() {
         if (Build.CPU_ABI.startsWith("arm")) {
             return "arm/";
         } else if (Build.CPU_ABI.startsWith("x86")) {
@@ -26,7 +25,7 @@ public class AssetUtil {
         }
     }
 
-    public static File writeAssetToFile(AssetManager assets, String assetName, File targetFile, int mode) {
+    private static File writeAssetToFile(AssetManager assets, String assetName, File targetFile, int mode) {
         try {
             if (assets == null)
                 assets = XposedApp.getInstance().getAssets();
@@ -53,10 +52,10 @@ public class AssetUtil {
         in.close();
         out.close();
 
-        FileUtils.setPermissions(targetFile.getAbsolutePath(), mode, -1, -1);
+        FileUtil.setPermissions(targetFile.getAbsolutePath(), mode, -1, -1);
     }
 
-    public synchronized static void extractBusybox() {
+    synchronized static void extractBusybox() {
         if (BUSYBOX_FILE.exists())
             return;
 
@@ -65,6 +64,7 @@ public class AssetUtil {
     }
 
     public synchronized static void removeBusybox() {
+        //noinspection ResultOfMethodCallIgnored
         BUSYBOX_FILE.delete();
     }
 }

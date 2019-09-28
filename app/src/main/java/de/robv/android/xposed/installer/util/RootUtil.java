@@ -3,9 +3,9 @@ package de.robv.android.xposed.installer.util;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.annotation.IdRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
+import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -44,7 +44,7 @@ public class RootUtil {
     }
 
     public static class CollectingLineCallback implements LineCallback {
-        protected List<String> mLines = new LinkedList<>();
+        List<String> mLines = new LinkedList<>();
 
         @Override
         public void onLine(String line) {
@@ -57,6 +57,7 @@ public class RootUtil {
         }
 
         @Override
+        @NonNull
         public String toString() {
             return TextUtils.join("\n", mLines);
         }
@@ -184,7 +185,7 @@ public class RootUtil {
     /**
      * Closes all resources related to the shell.
      */
-    public synchronized void dispose() {
+    private synchronized void dispose() {
         if (mShell == null) {
             return;
         }
@@ -239,7 +240,7 @@ public class RootUtil {
     }
 
     @Override
-    protected void finalize() throws Throwable {
+    protected void finalize() {
         dispose();
     }
 

@@ -3,6 +3,7 @@ package de.robv.android.xposed.installer.widget;
 import android.app.DownloadManager;
 import android.app.Fragment;
 import android.content.Context;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -188,11 +189,7 @@ public class DownloadView extends LinearLayout {
         @Override
         public void run() {
             while (true) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    return;
-                }
+                SystemClock.sleep(500);
 
                 try {
                     mInfo = DownloadsUtil.getById(getContext(), mInfo.id);

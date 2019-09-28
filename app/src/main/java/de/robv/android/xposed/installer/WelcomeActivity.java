@@ -7,12 +7,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,11 +45,11 @@ public class WelcomeActivity extends XposedBaseActivity implements NavigationVie
         ThemeUtil.setTheme(this);
         setContentView(R.layout.activity_welcome);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
+        mNavigationView = findViewById(R.id.navigation_view);
         assert mNavigationView != null;
         mNavigationView.setNavigationItemSelectedListener(this);
 
@@ -78,12 +78,7 @@ public class WelcomeActivity extends XposedBaseActivity implements NavigationVie
 
         if (savedInstanceState == null) {
             mDrawerHandler.removeCallbacksAndMessages(null);
-            mDrawerHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    navigate(mSelectedId);
-                }
-            }, 250);
+            mDrawerHandler.postDelayed(() -> navigate(mSelectedId), 250);
 
             boolean openDrawer = prefs.getBoolean("open_drawer", false);
 
@@ -110,12 +105,7 @@ public class WelcomeActivity extends XposedBaseActivity implements NavigationVie
         mSelectedId = mNavigationView.getMenu().getItem(itemId).getItemId();
         mNavigationView.getMenu().findItem(mSelectedId).setChecked(true);
         mDrawerHandler.removeCallbacksAndMessages(null);
-        mDrawerHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                navigate(mSelectedId);
-            }
-        }, 250);
+        mDrawerHandler.postDelayed(() -> navigate(mSelectedId), 250);
         mDrawerLayout.closeDrawers();
     }
 
@@ -194,12 +184,7 @@ public class WelcomeActivity extends XposedBaseActivity implements NavigationVie
         menuItem.setChecked(true);
         mSelectedId = menuItem.getItemId();
         mDrawerHandler.removeCallbacksAndMessages(null);
-        mDrawerHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                navigate(mSelectedId);
-            }
-        }, 250);
+        mDrawerHandler.postDelayed(() -> navigate(mSelectedId), 250);
         mDrawerLayout.closeDrawers();
         return true;
     }
@@ -227,19 +212,15 @@ public class WelcomeActivity extends XposedBaseActivity implements NavigationVie
         Fragment currentFragment = getFragmentManager().findFragmentById(R.id.content_frame);
         if (currentFragment instanceof DownloadDetailsFragment) {
             if (frameworkUpdateVersion != null) {
-                Snackbar.make(parentLayout, R.string.welcome_framework_update_available + " " + String.valueOf(frameworkUpdateVersion), Snackbar.LENGTH_LONG).show();
+                Snackbar.make(parentLayout, R.string.welcome_framework_update_available + " " + frameworkUpdateVersion, Snackbar.LENGTH_LONG).show();
             }
         }
 
         boolean snackBar = XposedApp.getPreferences().getBoolean("snack_bar", true);
 
         if (moduleUpdateAvailable && snackBar) {
-            Snackbar.make(parentLayout, R.string.modules_updates_available, Snackbar.LENGTH_LONG).setAction(getString(R.string.view), new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    switchFragment(2);
-                }
-            }).show();
+            Snackbar.make(parentLayout, R.string.modules_updates_available, Snackbar.LENGTH_LONG)
+                    .setAction(getString(R.string.view), view -> switchFragment(2)).show();
         }
     }
 

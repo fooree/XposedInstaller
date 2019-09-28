@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,8 +15,8 @@ import de.robv.android.xposed.installer.WelcomeActivity;
 import de.robv.android.xposed.installer.XposedApp;
 
 public final class NotificationUtil {
-    public static final int NOTIFICATION_MODULE_NOT_ACTIVATED_YET = 0;
-    public static final int NOTIFICATION_MODULES_UPDATED = 1;
+    private static final int NOTIFICATION_MODULE_NOT_ACTIVATED_YET = 0;
+    private static final int NOTIFICATION_MODULES_UPDATED = 1;
     private static final int PENDING_INTENT_OPEN_MODULES = 0;
     private static final int PENDING_INTENT_OPEN_INSTALL = 1;
     private static final int PENDING_INTENT_SOFT_REBOOT = 2;
@@ -39,7 +39,7 @@ public final class NotificationUtil {
         sNotificationManager.cancel(id);
     }
 
-    public static void cancelAll() {
+    private static void cancelAll() {
         sNotificationManager.cancelAll();
     }
 
@@ -58,8 +58,7 @@ public final class NotificationUtil {
                 .setSmallIcon(R.drawable.ic_notification)
                 .setColor(sContext.getResources().getColor(R.color.colorPrimary));
 
-        if (Build.VERSION.SDK_INT >= 21)
-            builder.setPriority(2);
+        builder.setPriority(2);
 
         Intent iActivateAndReboot = new Intent(sContext, RebootReceiver.class);
         iActivateAndReboot.putExtra(RebootReceiver.EXTRA_ACTIVATE_MODULE, packageName);
@@ -113,8 +112,7 @@ public final class NotificationUtil {
                 .setSmallIcon(R.drawable.ic_notification)
                 .setColor(sContext.getResources().getColor(R.color.colorPrimary));
 
-        if (Build.VERSION.SDK_INT >= 21)
-            builder.setPriority(2);
+        builder.setPriority(2);
 
         Intent iSoftReboot = new Intent(sContext, RebootReceiver.class);
         iSoftReboot.putExtra(RebootReceiver.EXTRA_SOFT_REBOOT, true);

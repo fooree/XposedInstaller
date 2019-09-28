@@ -55,7 +55,7 @@ public class RepoLoader extends OnlineLoader<RepoLoader> {
         return mInstance;
     }
 
-    public boolean refreshRepositories() {
+    private boolean refreshRepositories() {
         mRepositories = RepoDb.getRepositories();
 
 		// Unlikely case (usually only during initial load): DB state doesn't
@@ -202,11 +202,9 @@ public class RepoLoader extends OnlineLoader<RepoLoader> {
 
         boolean hasChanged = downloadAndParseFiles(messages);
         if (!messages.isEmpty()) {
-            XposedApp.runOnUiThread(new Runnable() {
-                public void run() {
-                    for (String message : messages) {
-                        Toast.makeText(sApp, message, Toast.LENGTH_LONG).show();
-                    }
+            XposedApp.runOnUiThread(() -> {
+                for (String message : messages) {
+                    Toast.makeText(sApp, message, Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -300,6 +298,7 @@ public class RepoLoader extends OnlineLoader<RepoLoader> {
                         in.close();
                     } catch (IOException ignored) {
                     }
+                //noinspection ResultOfMethodCallIgnored
                 cacheFile.delete();
                 RepoDb.endTransation();
             }

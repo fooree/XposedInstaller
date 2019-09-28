@@ -10,10 +10,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v13.app.FragmentCompat;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
+import androidx.annotation.NonNull;
+import androidx.legacy.app.FragmentCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -57,10 +57,10 @@ public class LogsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.tab_logs, container, false);
-        mTxtLog = (TextView) v.findViewById(R.id.txtLog);
+        mTxtLog = v.findViewById(R.id.txtLog);
         mTxtLog.setTextIsSelectable(true);
-        mSVLog = (ScrollView) v.findViewById(R.id.svLog);
-        mHSVLog = (HorizontalScrollView) v.findViewById(R.id.hsvLog);
+        mSVLog = v.findViewById(R.id.svLog);
+        mHSVLog = v.findViewById(R.id.hsvLog);
         reloadErrorLog();
 /*
         View scrollTop = v.findViewById(R.id.scroll_top);
@@ -117,54 +117,25 @@ public class LogsFragment extends Fragment {
     }
 
     private void scrollTop() {
-        mSVLog.post(new Runnable() {
-            @Override
-            public void run() {
-                mSVLog.scrollTo(0, 0);
-            }
-        });
-        mHSVLog.post(new Runnable() {
-            @Override
-            public void run() {
-                mHSVLog.scrollTo(0, 0);
-            }
-        });
+        mSVLog.post(() -> mSVLog.scrollTo(0, 0));
+        mHSVLog.post(() -> mHSVLog.scrollTo(0, 0));
     }
 
     private void scrollDown() {
-        mSVLog.post(new Runnable() {
-            @Override
-            public void run() {
-                mSVLog.scrollTo(0, mTxtLog.getHeight());
-            }
-        });
-        mHSVLog.post(new Runnable() {
-            @Override
-            public void run() {
-                mHSVLog.scrollTo(0, 0);
-            }
-        });
+        mSVLog.post(() -> mSVLog.scrollTo(0, mTxtLog.getHeight()));
+        mHSVLog.post(() -> mHSVLog.scrollTo(0, 0));
     }
 
     private void reloadErrorLog() {
         new LogsReader().execute(mFileErrorLog);
-        mSVLog.post(new Runnable() {
-            @Override
-            public void run() {
-                mSVLog.scrollTo(0, mTxtLog.getHeight());
-            }
-        });
-        mHSVLog.post(new Runnable() {
-            @Override
-            public void run() {
-                mHSVLog.scrollTo(0, 0);
-            }
-        });
+        mSVLog.post(() -> mSVLog.scrollTo(0, mTxtLog.getHeight()));
+        mHSVLog.post(() -> mHSVLog.scrollTo(0, 0));
     }
 
     private void clear() {
         try {
             new FileOutputStream(mFileErrorLog).close();
+            //noinspection ResultOfMethodCallIgnored
             mFileErrorLogOld.delete();
             mTxtLog.setText(R.string.log_is_empty);
             Toast.makeText(getActivity(), R.string.logs_cleared,
@@ -193,12 +164,7 @@ public class LogsFragment extends Fragment {
         if (requestCode == WRITE_EXTERNAL_PERMISSION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (mClickedMenuItem != null) {
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            onOptionsItemSelected(mClickedMenuItem);
-                        }
-                    }, 500);
+                    new Handler().postDelayed(() -> onOptionsItemSelected(mClickedMenuItem), 500);
                 }
             } else {
                 Toast.makeText(getActivity(), R.string.permissionNotGranted, Toast.LENGTH_LONG).show();
@@ -227,7 +193,9 @@ public class LogsFragment extends Fragment {
 
         File dir = getActivity().getExternalFilesDir(null);
 
-        if (!dir.exists()) dir.mkdir();
+        assert dir != null;
+        if (!dir.exists()) //noinspection ResultOfMethodCallIgnored
+            dir.mkdir();
 
         File targetFile = new File(dir, filename);
 

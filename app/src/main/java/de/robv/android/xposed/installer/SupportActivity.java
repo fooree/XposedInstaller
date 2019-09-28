@@ -2,8 +2,8 @@ package de.robv.android.xposed.installer;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,15 +19,10 @@ public class SupportActivity extends XposedBaseActivity {
         ThemeUtil.setTheme(this);
         setContentView(R.layout.activity_container);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(view -> finish());
 
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
@@ -56,7 +51,7 @@ public class SupportActivity extends XposedBaseActivity {
             View installerSupportView = v.findViewById(R.id.installerSupportView);
             View faqView = v.findViewById(R.id.faqView);
             View donateView = v.findViewById(R.id.donateView);
-            TextView txtModuleSupport = (TextView) v.findViewById(R.id.tab_support_module_description);
+            TextView txtModuleSupport = v.findViewById(R.id.tab_support_module_description);
 
             txtModuleSupport.setText(getString(R.string.support_modules_description,
                     getString(R.string.module_support)));
@@ -69,12 +64,7 @@ public class SupportActivity extends XposedBaseActivity {
         }
 
         public void setupView(View v, final int url) {
-            v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    NavUtil.startURL(getActivity(), getString(url));
-                }
-            });
+            v.setOnClickListener(v1 -> NavUtil.startURL(getActivity(), getString(url)));
         }
     }
 }

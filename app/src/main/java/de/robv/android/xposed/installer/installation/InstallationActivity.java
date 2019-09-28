@@ -10,10 +10,12 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
+
+import android.os.SystemClock;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
@@ -54,15 +56,10 @@ public class InstallationActivity extends XposedBaseActivity {
 
         setContentView(R.layout.activity_container);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(view -> finish());
 
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
@@ -111,49 +108,30 @@ public class InstallationActivity extends XposedBaseActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.activity_installation, container, false);
 
-            mLogText = (TextView) view.findViewById(R.id.console);
-            mProgress = (ProgressBar) view.findViewById(R.id.progressBar);
-            mConsoleResult = (ImageView) view.findViewById(R.id.console_result);
-            mBtnReboot = (Button) view.findViewById(R.id.reboot);
-            mBtnCancel = (Button) view.findViewById(R.id.cancel);
+            mLogText = view.findViewById(R.id.console);
+            mProgress = view.findViewById(R.id.progressBar);
+            mConsoleResult = view.findViewById(R.id.console_result);
+            mBtnReboot = view.findViewById(R.id.reboot);
+            mBtnCancel = view.findViewById(R.id.cancel);
 
             return view;
         }
 
         @Override
         public void onStarted() {
-            try {
-                Thread.sleep(LONG_ANIM_TIME * 3);
-            } catch (InterruptedException ignored) {
-            }
+            SystemClock.sleep(LONG_ANIM_TIME * 3);
         }
 
         @Override
         public void onLine(final String line) {
-            try {
-                Thread.sleep(60);
-            } catch (InterruptedException ignored) {
-            }
-            XposedApp.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    appendText(line, TYPE_NONE);
-                }
-            });
+            SystemClock.sleep(60);
+            XposedApp.postOnUiThread(() -> appendText(line, TYPE_NONE));
         }
 
         @Override
         public void onErrorLine(final String line) {
-            try {
-                Thread.sleep(60);
-            } catch (InterruptedException ignored) {
-            }
-            XposedApp.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    appendText(line, TYPE_ERROR);
-                }
-            });
+            SystemClock.sleep(60);
+            XposedApp.postOnUiThread(() -> appendText(line, TYPE_ERROR));
         }
 
         private static ValueAnimator createExpandCollapseAnimator(final View view, final boolean expand) {
@@ -206,142 +184,128 @@ public class InstallationActivity extends XposedBaseActivity {
         @Override
         public void onDone() {
             XposedApp.getInstance().reloadXposedProp();
-            try {
-                Thread.sleep(LONG_ANIM_TIME);
-            } catch (InterruptedException ignored) {
-            }
-            XposedApp.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    appendText("\n" + getString(R.string.file_done), TYPE_OK);
+            SystemClock.sleep(LONG_ANIM_TIME);
+            XposedApp.postOnUiThread(() -> {
+                appendText("\n" + getString(R.string.file_done), TYPE_OK);
 
-                    // Fade in the result image.
-                    mConsoleResult.setImageResource(R.drawable.ic_check_circle);
-                    mConsoleResult.setVisibility(View.VISIBLE);
-                    ObjectAnimator fadeInResult = ObjectAnimator.ofFloat(mConsoleResult, "alpha", 0.0f, 0.03f);
-                    fadeInResult.setDuration(MEDIUM_ANIM_TIME * 2);
+                // Fade in the result image.
+                mConsoleResult.setImageResource(R.drawable.ic_check_circle);
+                mConsoleResult.setVisibility(View.VISIBLE);
+                ObjectAnimator fadeInResult = ObjectAnimator.ofFloat(mConsoleResult, "alpha", 0.0f, 0.03f);
+                fadeInResult.setDuration(MEDIUM_ANIM_TIME * 2);
 
-                    // Collapse the whole bottom bar.
-                    View buttomBar = getView().findViewById(R.id.buttonPanel);
-                    Animator collapseBottomBar = createExpandCollapseAnimator(buttomBar, false);
-                    collapseBottomBar.setDuration(MEDIUM_ANIM_TIME);
-                    collapseBottomBar.addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            mProgress.setIndeterminate(false);
-                            mProgress.setRotation(180);
-                            mProgress.setMax(REBOOT_COUNTDOWN);
-                            mProgress.setProgress(REBOOT_COUNTDOWN);
+                // Collapse the whole bottom bar.
+                View buttomBar = getView().findViewById(R.id.buttonPanel);
+                Animator collapseBottomBar = createExpandCollapseAnimator(buttomBar, false);
+                collapseBottomBar.setDuration(MEDIUM_ANIM_TIME);
+                collapseBottomBar.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mProgress.setIndeterminate(false);
+                        mProgress.setRotation(180);
+                        mProgress.setMax(REBOOT_COUNTDOWN);
+                        mProgress.setProgress(REBOOT_COUNTDOWN);
 
-                            mBtnReboot.setVisibility(View.VISIBLE);
-                            mBtnCancel.setVisibility(View.VISIBLE);
+                        mBtnReboot.setVisibility(View.VISIBLE);
+                        mBtnCancel.setVisibility(View.VISIBLE);
+                    }
+                });
+
+                Animator expandBottomBar = createExpandCollapseAnimator(buttomBar, true);
+                expandBottomBar.setDuration(MEDIUM_ANIM_TIME * 2);
+                expandBottomBar.setStartDelay(LONG_ANIM_TIME * 4);
+
+                final ObjectAnimator countdownProgress = ObjectAnimator.ofInt(mProgress, "progress", REBOOT_COUNTDOWN, 0);
+                countdownProgress.setDuration(REBOOT_COUNTDOWN);
+                countdownProgress.setInterpolator(new LinearInterpolator());
+
+                final ValueAnimator countdownButton = ValueAnimator.ofInt(REBOOT_COUNTDOWN / 1000, 0);
+                countdownButton.setDuration(REBOOT_COUNTDOWN);
+                countdownButton.setInterpolator(new LinearInterpolator());
+
+                final String format = getString(R.string.countdown);
+                final RootUtil.RebootMode rebootMode = mFlashable.getRebootMode();
+                final String action = getString(rebootMode.titleRes);
+                mBtnReboot.setText(String.format(format, action, REBOOT_COUNTDOWN / 1000));
+
+                countdownButton.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    private int minWidth = 0;
+
+                    @SuppressLint("StringFormatMatches")
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        mBtnReboot.setText(String.format(format, action, animation.getAnimatedValue()));
+
+                        // Make sure that the button width doesn't shrink.
+                        if (mBtnReboot.getWidth() > minWidth) {
+                            minWidth = mBtnReboot.getWidth();
+                            mBtnReboot.setMinimumWidth(minWidth);
                         }
-                    });
+                    }
+                });
 
-                    Animator expandBottomBar = createExpandCollapseAnimator(buttomBar, true);
-                    expandBottomBar.setDuration(MEDIUM_ANIM_TIME * 2);
-                    expandBottomBar.setStartDelay(LONG_ANIM_TIME * 4);
+                countdownButton.addListener(new AnimatorListenerAdapter() {
+                    private boolean canceled = false;
 
-                    final ObjectAnimator countdownProgress = ObjectAnimator.ofInt(mProgress, "progress", REBOOT_COUNTDOWN, 0);
-                    countdownProgress.setDuration(REBOOT_COUNTDOWN);
-                    countdownProgress.setInterpolator(new LinearInterpolator());
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+                        canceled = true;
+                    }
 
-                    final ValueAnimator countdownButton = ValueAnimator.ofInt(REBOOT_COUNTDOWN / 1000, 0);
-                    countdownButton.setDuration(REBOOT_COUNTDOWN);
-                    countdownButton.setInterpolator(new LinearInterpolator());
-
-                    final String format = getString(R.string.countdown);
-                    final RootUtil.RebootMode rebootMode = mFlashable.getRebootMode();
-                    final String action = getString(rebootMode.titleRes);
-                    mBtnReboot.setText(String.format(format, action, REBOOT_COUNTDOWN / 1000));
-
-                    countdownButton.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                        private int minWidth = 0;
-
-                        @Override
-                        public void onAnimationUpdate(ValueAnimator animation) {
-                            mBtnReboot.setText(String.format(format, action, animation.getAnimatedValue()));
-
-                            // Make sure that the button width doesn't shrink.
-                            if (mBtnReboot.getWidth() > minWidth) {
-                                minWidth = mBtnReboot.getWidth();
-                                mBtnReboot.setMinimumWidth(minWidth);
-                            }
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        if (!canceled) {
+                            mBtnReboot.callOnClick();
                         }
-                    });
+                    }
+                });
 
-                    countdownButton.addListener(new AnimatorListenerAdapter() {
-                        private boolean canceled = false;
+                mBtnReboot.setOnClickListener(v -> {
+                    countdownProgress.cancel();
+                    countdownButton.cancel();
 
-                        @Override
-                        public void onAnimationCancel(Animator animation) {
-                            canceled = true;
-                        }
+                    RootUtil rootUtil = new RootUtil();
+                    if (!rootUtil.startShell(InstallationFragment.this)
+                            || !rootUtil.reboot(rebootMode, InstallationFragment.this)) {
+                        onError(FlashCallback.ERROR_GENERIC, getString(R.string.reboot_failed));
+                    }
+                });
 
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            if (!canceled) {
-                                mBtnReboot.callOnClick();
-                            }
-                        }
-                    });
+                mBtnCancel.setOnClickListener(v -> {
+                    countdownProgress.cancel();
+                    countdownButton.cancel();
 
-                    mBtnReboot.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            countdownProgress.cancel();
-                            countdownButton.cancel();
+                    getActivity().finish();
+                });
 
-                            RootUtil rootUtil = new RootUtil();
-                            if (!rootUtil.startShell(InstallationFragment.this)
-                                    || !rootUtil.reboot(rebootMode, InstallationFragment.this)) {
-                                onError(FlashCallback.ERROR_GENERIC, getString(R.string.reboot_failed));
-                            }
-                        }
-                    });
-
-                    mBtnCancel.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            countdownProgress.cancel();
-                            countdownButton.cancel();
-
-                            getActivity().finish();
-                        }
-                    });
-
-                    AnimatorSet as = new AnimatorSet();
-                    as.play(fadeInResult);
-                    as.play(collapseBottomBar).with(fadeInResult);
-                    as.play(expandBottomBar).after(collapseBottomBar);
-                    as.play(countdownProgress).after(expandBottomBar);
-                    as.play(countdownButton).after(expandBottomBar);
-                    as.start();
-                }
+                AnimatorSet as = new AnimatorSet();
+                as.play(fadeInResult);
+                as.play(collapseBottomBar).with(fadeInResult);
+                as.play(expandBottomBar).after(collapseBottomBar);
+                as.play(countdownProgress).after(expandBottomBar);
+                as.play(countdownButton).after(expandBottomBar);
+                as.start();
             });
         }
 
         @Override
         public void onError(final int exitCode, final String error) {
-            XposedApp.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    appendText(error, TYPE_ERROR);
+            XposedApp.postOnUiThread(() -> {
+                appendText(error, TYPE_ERROR);
 
-                    mConsoleResult.setImageResource(R.drawable.ic_error);
-                    mConsoleResult.setVisibility(View.VISIBLE);
-                    ObjectAnimator fadeInResult = ObjectAnimator.ofFloat(mConsoleResult, "alpha", 0.0f, 0.03f);
-                    fadeInResult.setDuration(MEDIUM_ANIM_TIME * 2);
+                mConsoleResult.setImageResource(R.drawable.ic_error);
+                mConsoleResult.setVisibility(View.VISIBLE);
+                ObjectAnimator fadeInResult = ObjectAnimator.ofFloat(mConsoleResult, "alpha", 0.0f, 0.03f);
+                fadeInResult.setDuration(MEDIUM_ANIM_TIME * 2);
 
-                    View buttomBar = getView().findViewById(R.id.buttonPanel);
-                    Animator collapseBottomBar = createExpandCollapseAnimator(buttomBar, false);
-                    collapseBottomBar.setDuration(MEDIUM_ANIM_TIME);
+                View buttomBar = getView().findViewById(R.id.buttonPanel);
+                Animator collapseBottomBar = createExpandCollapseAnimator(buttomBar, false);
+                collapseBottomBar.setDuration(MEDIUM_ANIM_TIME);
 
-                    AnimatorSet as = new AnimatorSet();
-                    as.play(fadeInResult);
-                    as.play(collapseBottomBar).with(fadeInResult);
-                    as.start();
-                }
+                AnimatorSet as = new AnimatorSet();
+                as.play(fadeInResult);
+                as.play(collapseBottomBar).with(fadeInResult);
+                as.start();
             });
         }
 

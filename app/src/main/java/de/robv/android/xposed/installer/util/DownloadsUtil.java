@@ -9,11 +9,12 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.UiThread;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.os.EnvironmentCompat;
+import androidx.annotation.NonNull;
+import androidx.annotation.UiThread;
+import androidx.core.content.ContextCompat;
+import androidx.core.os.EnvironmentCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -196,11 +197,7 @@ public class DownloadsUtil {
             @Override
             public void run() {
                 while (true) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
+                    SystemClock.sleep(100);
 
                     final DownloadInfo info = getById(context, id);
                     if (info == null) {
@@ -208,14 +205,9 @@ public class DownloadsUtil {
                         return;
                     } else if (info.status == DownloadManager.STATUS_FAILED) {
                         dialog.cancel();
-                        XposedApp.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(context,
-                                        context.getString(R.string.download_view_failed, info.reason),
-                                        Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        XposedApp.runOnUiThread(() -> Toast.makeText(context,
+                                context.getString(R.string.download_view_failed, info.reason),
+                                Toast.LENGTH_LONG).show());
                         return;
                     } else if (info.status == DownloadManager.STATUS_SUCCESSFUL) {
                         dialog.dismiss();
@@ -227,18 +219,15 @@ public class DownloadsUtil {
                         return;
                     }
 
-                    XposedApp.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (info.totalSize <= 0 || info.status != DownloadManager.STATUS_RUNNING) {
-                                dialog.setContent(R.string.download_view_waiting);
-                                dialog.setShowProcess(false);
-                            } else {
-                                dialog.setContent(R.string.download_running);
-                                dialog.setProgress(info.bytesDownloaded / 1024);
-                                dialog.setMaxProgress(info.totalSize / 1024);
-                                dialog.setShowProcess(true);
-                            }
+                    XposedApp.runOnUiThread(() -> {
+                        if (info.totalSize <= 0 || info.status != DownloadManager.STATUS_RUNNING) {
+                            dialog.setContent(R.string.download_view_waiting);
+                            dialog.setShowProcess(false);
+                        } else {
+                            dialog.setContent(R.string.download_running);
+                            dialog.setProgress(info.bytesDownloaded / 1024);
+                            dialog.setMaxProgress(info.totalSize / 1024);
+                            dialog.setShowProcess(true);
                         }
                     });
                 }

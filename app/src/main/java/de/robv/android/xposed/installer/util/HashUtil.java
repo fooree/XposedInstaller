@@ -8,9 +8,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class HashUtil {
-    public static final String hash(String input, String algorithm) {
+
+    public static String md5(String input) {
         try {
-            MessageDigest md = MessageDigest.getInstance(algorithm);
+            MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] messageDigest = md.digest(input.getBytes());
             return toHexString(messageDigest);
         } catch (NoSuchAlgorithmException e) {
@@ -18,16 +19,12 @@ public class HashUtil {
         }
     }
 
-    public static final String md5(String input) {
-        return hash(input, "MD5");
-    }
-
-    public static final String hash(File file, String algorithm) throws IOException {
+    public static String md5(File input) throws IOException {
         try {
-            MessageDigest md = MessageDigest.getInstance(algorithm);
-            InputStream is = new FileInputStream(file);
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            InputStream is = new FileInputStream(input);
             byte[] buffer = new byte[8192];
-            int read = 0;
+            int read;
             while ((read = is.read(buffer)) > 0) {
                 md.update(buffer, 0, read);
             }
@@ -37,10 +34,6 @@ public class HashUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException(e);
         }
-    }
-
-    public static final String md5(File input) throws IOException {
-        return hash(input, "MD5");
     }
 
     private static String toHexString(byte[] bytes) {

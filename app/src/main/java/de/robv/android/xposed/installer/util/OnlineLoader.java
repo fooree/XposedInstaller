@@ -4,14 +4,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.CallSuper;
+import androidx.annotation.CallSuper;
 
 import de.robv.android.xposed.installer.XposedApp;
 
 public abstract class OnlineLoader<T> extends Loader<T> {
-    protected SharedPreferences mPref = XposedApp.getPreferences();
-    protected String mPrefKeyLastUpdateCheck = CLASS_NAME + "_last_update_check";
-    protected int mUpdateFrequency = 24 * 60 * 60 * 1000;
+    SharedPreferences mPref = XposedApp.getPreferences();
+    String mPrefKeyLastUpdateCheck = CLASS_NAME + "_last_update_check";
+    private int mUpdateFrequency = 24 * 60 * 60 * 1000;
 
     private static final ConnectivityManager sConMgr
             = (ConnectivityManager) XposedApp.getInstance().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -38,7 +38,7 @@ public abstract class OnlineLoader<T> extends Loader<T> {
         resetLastUpdateCheck();
     }
 
-    public void resetLastUpdateCheck() {
+    private void resetLastUpdateCheck() {
         mPref.edit().remove(mPrefKeyLastUpdateCheck).apply();
     }
 

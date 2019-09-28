@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "de.robv.android.xposed.installer"
-        minSdkVersion 15
-        targetSdkVersion 25
+        minSdkVersion 23
+        targetSdkVersion 28
         versionCode 43
         versionName "3.1.5"
         archivesBaseName = "XposedInstaller_${versionName}".replace(' ', '_')
@@ -21,13 +21,17 @@ android {
             pseudoLocalesEnabled true
         }
     }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
 }
 
 dependencies {
-    implementation 'com.android.support:cardview-v7:27.0.2'
-    implementation 'com.android.support:design:27.0.2'
-    implementation 'com.android.support:customtabs:27.0.2'
-    implementation 'com.android.support:support-v13:27.0.2'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.browser:browser:1.0.0'
+    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.0.2'
     implementation 'se.emilsjolander:stickylistheaders:2.7.0'
     implementation 'eu.chainfire:libsuperuser:1.0.0.201608240809'

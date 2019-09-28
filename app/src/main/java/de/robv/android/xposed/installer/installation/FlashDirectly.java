@@ -20,10 +20,11 @@ import static de.robv.android.xposed.installer.util.InstallZipUtil.closeSilently
 import static de.robv.android.xposed.installer.util.InstallZipUtil.triggerError;
 import static de.robv.android.xposed.installer.util.RootUtil.getShellPath;
 
+@SuppressWarnings("OctalInteger")
 public class FlashDirectly extends Flashable {
     private final boolean mSystemless;
 
-    public FlashDirectly(File zipPath, FrameworkZips.Type type, String title, boolean systemless) {
+    FlashDirectly(File zipPath, FrameworkZips.Type type, String title, boolean systemless) {
         super(zipPath, type, title);
         mSystemless = systemless;
     }
@@ -46,7 +47,7 @@ public class FlashDirectly extends Flashable {
         ZipEntry entry = zip.getEntry("META-INF/com/google/android/update-binary");
         File updateBinaryFile = new File(XposedApp.getInstance().getCacheDir(), "update-binary");
         try {
-            AssetUtil.writeStreamToFile(zip.getInputStream(entry), updateBinaryFile, 0700);
+            AssetUtil.writeStreamToFile(zip.getInputStream(entry), updateBinaryFile, 00700);
         } catch (IOException e) {
             Log.e(XposedApp.TAG, "Could not extract update-binary", e);
             triggerError(callback, FlashCallback.ERROR_INVALID_ZIP);
@@ -96,7 +97,7 @@ public class FlashDirectly extends Flashable {
         dest.writeInt(mSystemless ? 1 : 0);
     }
 
-    protected FlashDirectly(Parcel in) {
+    private FlashDirectly(Parcel in) {
         super(in);
         mSystemless = in.readInt() == 1;
     }

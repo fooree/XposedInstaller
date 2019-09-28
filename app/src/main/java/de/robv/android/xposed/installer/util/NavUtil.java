@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
-import android.support.annotation.AnyThread;
-import android.support.annotation.NonNull;
-import android.support.customtabs.CustomTabsIntent;
+import androidx.annotation.AnyThread;
+import androidx.annotation.NonNull;
+import androidx.browser.customtabs.CustomTabsIntent;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.URLSpan;
@@ -26,7 +26,7 @@ public final class NavUtil {
 
         Spannable spannable = new SpannableString(str);
         Linkify.addLinks(spannable, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
-        URLSpan spans[] = spannable.getSpans(0, spannable.length(), URLSpan.class);
+        URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
         return (spans.length > 0) ? Uri.parse(spans[0].getURL()) : null;
     }
 
@@ -50,14 +50,9 @@ public final class NavUtil {
 
     @AnyThread
     public static void showMessage(final @NonNull Context context, final CharSequence message) {
-        XposedApp.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                new MaterialDialog.Builder(context)
-                        .content(message)
-                        .positiveText(android.R.string.ok)
-                        .show();
-            }
-        });
+        XposedApp.runOnUiThread(() -> new MaterialDialog.Builder(context)
+                .content(message)
+                .positiveText(android.R.string.ok)
+                .show());
     }
 }

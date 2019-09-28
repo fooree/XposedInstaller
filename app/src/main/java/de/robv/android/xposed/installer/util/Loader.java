@@ -1,6 +1,6 @@
 package de.robv.android.xposed.installer.util;
 
-import android.support.v4.widget.SwipeRefreshLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import de.robv.android.xposed.installer.XposedApp;
 
 public abstract class Loader<T> implements SwipeRefreshLayout.OnRefreshListener {
-    protected final String CLASS_NAME = getClass().getSimpleName();
+    final String CLASS_NAME = getClass().getSimpleName();
     private boolean mIsLoading = false;
     private boolean mReloadTriggeredOnce = false;
     private final List<Listener<T>> mListeners = new CopyOnWriteArrayList<>();
@@ -102,7 +102,7 @@ public abstract class Loader<T> implements SwipeRefreshLayout.OnRefreshListener 
         mListeners.remove(listener);
     }
 
-    protected void notifyListeners() {
+    void notifyListeners() {
         for (Listener<T> listener : mListeners) {
             //noinspection unchecked
             listener.onReloadDone((T) this);
@@ -129,13 +129,10 @@ public abstract class Loader<T> implements SwipeRefreshLayout.OnRefreshListener 
             return;
         }
 
-        XposedApp.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (Loader.this) {
-                    if (mSwipeRefreshLayout != null) {
-                        mSwipeRefreshLayout.setRefreshing(mIsLoading);
-                    }
+        XposedApp.runOnUiThread(() -> {
+            synchronized (Loader.this) {
+                if (mSwipeRefreshLayout != null) {
+                    mSwipeRefreshLayout.setRefreshing(mIsLoading);
                 }
             }
         });

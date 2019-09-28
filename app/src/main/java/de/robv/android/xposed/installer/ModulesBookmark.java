@@ -6,10 +6,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.Nullable;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.ContextMenu;
@@ -44,15 +44,10 @@ public class ModulesBookmark extends XposedBaseActivity {
 
         mRepoLoader = RepoLoader.getInstance();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(view -> finish());
 
         ActionBar ab = getSupportActionBar();
         if (ab != null) {
@@ -129,12 +124,7 @@ public class ModulesBookmark extends XposedBaseActivity {
                     if (m != null) mBookmarkedModules.add(m);
                 }
             }
-            Collections.sort(mBookmarkedModules, new Comparator<Module>() {
-                @Override
-                public int compare(Module mod1, Module mod2) {
-                    return mod1.name.compareTo(mod2.name);
-                }
-            });
+            Collections.sort(mBookmarkedModules, (mod1, mod2) -> mod1.name.compareTo(mod2.name));
             mAdapter.addAll(mBookmarkedModules);
             mAdapter.notifyDataSetChanged();
         }
@@ -206,13 +196,9 @@ public class ModulesBookmark extends XposedBaseActivity {
         private void remove(final String pkg) {
             mBookmarksPref.edit().putBoolean(pkg, false).apply();
 
-            Snackbar.make(container, R.string.bookmark_removed, Snackbar.LENGTH_SHORT).setAction(R.string.undo, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mBookmarksPref.edit().putBoolean(pkg, true).apply();
-
-                    getModules();
-                }
+            Snackbar.make(container, R.string.bookmark_removed, Snackbar.LENGTH_SHORT).setAction(R.string.undo, v -> {
+                mBookmarksPref.edit().putBoolean(pkg, true).apply();
+                getModules();
             }).show();
 
             getModules();
@@ -226,7 +212,7 @@ public class ModulesBookmark extends XposedBaseActivity {
     }
 
     private static class BookmarkModuleAdapter extends ArrayAdapter<Module> {
-        public BookmarkModuleAdapter(Context context) {
+        BookmarkModuleAdapter(Context context) {
             super(context, R.layout.list_item_module, R.id.title);
         }
 
